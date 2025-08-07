@@ -94,7 +94,7 @@ class UserController extends Controller
 
                         'email'         => 'required|unique:users,email|email:rfc,dns',
                         'profile_pic'   => 'nullable|image|max:2048',
-                        'gender'        => 'required|in:male,female,other',
+
                         'password'      => ['required', 'string', 'min:8', 'regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d@$!%*?&^#_+=-]{8,}$/',],
                     ],
                     [
@@ -265,6 +265,17 @@ class UserController extends Controller
     {
         try {
             User::where('id', $id)->restore();
+            // Optionally, you can send a notification to the user about the restoration
+            $user = User::find($id);
+            if ($user) {
+                $this->sendPushNotification(
+                    'Account restored',
+                    'Your account has been restored successfully.',
+                    'accout_restored',
+                    $id
+
+                );
+            }
             return response()->json(["status" => "success", "message" => "User " . config('constants.SUCCESS.RESTORE_DONE')], 200);
         } catch (\Exception $e) {
             return response()->json(["status" => "error", $e->getMessage()], 500);
@@ -292,6 +303,23 @@ class UserController extends Controller
             }
 
             User::where('id', $request->id)->update(['status' => $request->status]);
+            //  you can send a push notification to the user about the status change
+            $user = User::find($request->id);
+            if ($user && $user->status == 1) {
+                $this->sendPushNotification(
+                    'Account activated',
+                    'Your account has been activated successfully.',
+                    'account_activated',
+                    $request->id
+                );
+            } elseif ($user && $user->status == 0) {
+                $this->sendPushNotification(
+                    'Account deactivated',
+                    'Your account has been deactivated successfully.',
+                    'account_deactivated',
+                    $request->id
+                );
+            }
 
             return response()->json(["status" => "success", "message" => "User status " . config('constants.SUCCESS.CHANGED_DONE')], 200);
         } catch (\Exception $e) {
@@ -319,51 +347,52 @@ class UserController extends Controller
     /**End method changeSubscription**/
 
 
-        public function uploadAvatar(Request $request)
-        {
-            $request->validate([
-                'avatar.*' => 'required|image|max:2048',
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'avatar.*' => 'required|image|max:2048',
+        ]);
+
+        $uploadedFiles = $request->file('avatar');
+
+        foreach ($uploadedFiles as $file) {
+            $path = $file->store('avatars', 'public');
+            $fullUrl = Storage::url($path);
+
+            Avatar::create([
+                'avatar_path' => asset($fullUrl)
             ]);
-
-            $uploadedFiles = $request->file('avatar');
-
-            foreach ($uploadedFiles as $file) {
-                $path = $file->store('avatars', 'public');
-                $fullUrl = Storage::url($path);
-
-                Avatar::create([
-                    'avatar_path' => asset($fullUrl)
-                ]);
-            }
-
-            return redirect()->route('admin.avatar.list')->with('success', 'Avatars uploaded successfully.');
         }
 
+        return redirect()->route('admin.avatar.list')->with('success', 'Avatars uploaded successfully.');
+    }
 
 
-            public function listAvatar(Request $request)
-            {
-                $avatars = Avatar::paginate(10);
 
-                return view("admin.avatar.list", compact("avatars"));
-            }
+    public function listAvatar(Request $request)
+    {
+        $avatars = Avatar::paginate(10);
 
-
-            public function addAvatar(Request $request)
-            {
-                
-                return view("admin.avatar.add");
-            }
-
-            public function deleteAvatar($id){
-                
-                try {
-                    Avatar::where('id', $id)->delete();
-                    return response()->json(["status" => "success", "message" => "Avatar " . config('constants.SUCCESS.DELETE_DONE')], 200);
-                } catch (\Exception $e) {
+        return view("admin.avatar.list", compact("avatars"));
+    }
 
 
-                    return response()->json(["status" => "error", $e->getMessage()], 500);
-                }
-            }
+    public function addAvatar(Request $request)
+    {
+
+        return view("admin.avatar.add");
+    }
+
+    public function deleteAvatar($id)
+    {
+
+        try {
+            Avatar::where('id', $id)->delete();
+            return response()->json(["status" => "success", "message" => "Avatar " . config('constants.SUCCESS.DELETE_DONE')], 200);
+        } catch (\Exception $e) {
+
+
+            return response()->json(["status" => "error", $e->getMessage()], 500);
+        }
+    }
 }

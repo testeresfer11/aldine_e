@@ -41,7 +41,9 @@ class User extends Authenticatable
         'country',
         'bio',
         'status',
-        'is_profile_updated'
+        'is_profile_updated',
+        'provider',
+        'provider_id'
     ];
     
     /**

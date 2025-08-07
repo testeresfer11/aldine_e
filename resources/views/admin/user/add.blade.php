@@ -65,7 +65,13 @@
                             <option value="">Select Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
-                            <option value="other">Other</option>
+                            <option value="they/them">They/Them</option>
+                            <option value="he/him">He/Him</option>
+                            <option value="she/her">She/Her</option>
+
+                            
+
+
                         </select>
                         @error('gender')
                             <span class="invalid-feedback" role="alert">

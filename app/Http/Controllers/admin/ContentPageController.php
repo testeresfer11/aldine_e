@@ -82,53 +82,78 @@ class ContentPageController extends Controller
      * createdDate  : 15-04-2025
      * purpose      : send message through contact us
     */
-    public function storeContact(Request $request){
-        try {
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email',
-                'message' => 'required|string'
-            ]);
+   public function storeContact(Request $request)
+{
+    try {
+        $validated = $request->validate([
+            'name'    => 'required|string|max:255',
+            'email'   => 'required|email',
+            'subject' => 'nullable|string|max:255',
+            'message' => 'required|string',
+        ]);
 
-            $contact = Contact::create($validated);
+        $contact = Contact::create($validated);
 
-            if ($contact) {
-                $template = $this->getTemplateByName('Contact_submit');
+        if ($contact) {
+            // --- Send User Auto-Reply ---
+            $userTemplate = $this->getTemplateByName('Contact_submit');
+            if ($userTemplate) {
+                $userReplacements = ['{{$name}}', '{{$companyName}}', '{{YEAR}}'];
+                $userWithValues = [
+                    $contact->name,
+                    config('app.name'),
+                    date('Y'),
+                ];
 
-                if ($template) {
-                    // Replace placeholders in template
-                    $stringToReplace = ['{{$name}}', '{{$companyName}}', '{{YEAR}}'];
-                    $stringReplaceWith = [
-                        $contact->name,
-                        config('app.name'),
-                        date('Y')
-                    ];
+                $emailBody = str_replace($userReplacements, $userWithValues, $userTemplate->template);
 
-                    $emailBody = str_replace($stringToReplace, $stringReplaceWith, $template->template);
+                $emailData = $this->mailData(
+                    $contact->email,
+                    str_replace(['{{$companyName}}'], [config('app.name')], $userTemplate->subject),
+                    $emailBody,
+                    'Contact_Reply',
+                    $userTemplate->id
+                );
 
-                    // Assuming mailData() and mailSend() are your custom methods
-                    $emailData = $this->mailData(
-                        $contact->email,
-                        str_replace(['{{$companyName}}'], [config('app.name')], $template->subject),
-                        $emailBody,
-                        'Contact_Reply',
-                        $template->id
-                    );
-
-                    $this->mailSend($emailData);
-
-                }
+                $this->mailSend($emailData);
             }
 
-            return redirect()->back()->with('success', 'Thank you for reaching out. We will get back to you soon!');
+            // --- Send Admin Notification ---
+            $adminTemplate = $this->getTemplateByName('new_contact');
+            if ($adminTemplate) {
+                $adminReplacements = ['{{$name}}', '{{$email}}', '{{$subject}}', '{{$user_message}}', '{{$companyName}}', '{{YEAR}}'];
+                $adminWithValues = [
+                    $contact->name,
+                    $contact->email,
+                    $contact->subject ?? 'N/A',
+                    $contact->message,
+                    config('app.name'),
+                    date('Y'),
+                ];
 
-        } catch (\Exception $e) {
-            // Log the error or handle as needed
-            \Log::error('Contact form submission failed: '.$e->getMessage());
+                $adminEmailBody = str_replace($adminReplacements, $adminWithValues, $adminTemplate->template);
 
-            return redirect()->back()->with('error', 'Something went wrong. Please try again later.');
+                $adminEmailData = $this->mailData(
+                    'info@edupalz.com', // <- Make sure this is set in your .env
+                    str_replace(['{{$companyName}}'], [config('app.name')], $adminTemplate->subject),
+                    $adminEmailBody,
+                    'Contact_Alert',
+                    $adminTemplate->id
+                );
+
+                $this->mailSend($adminEmailData);
+            }
         }
+
+        return redirect()->back()->with('success', 'Thank you for reaching out. We will get back to you soon!');
+
+    } catch (\Exception $e) {
+        \Log::error('Contact form submission failed: ' . $e->getMessage());
+
+        return redirect()->back()->with('error', 'Something went wrong. Please try again later.');
     }
+}
+
      /**End method storeContact**/
 
 

@@ -10,6 +10,8 @@ use App\Models\QuickSolveQuestionReaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Traits\SendResponseTrait;
+use Stichoza\GoogleTranslate\GoogleTranslate;
+
 
 class QuickSolveController extends Controller
 {
@@ -131,19 +133,38 @@ class QuickSolveController extends Controller
 
 
     //  Save a question
-    public function store(Request $request)
-    {
-        $question = QuickSolveQuestion::create([
-            'category_id' => $request->category_id ?? null,
-            'subcategory_id' => $request->subcategory_id ?? null,
-            'user_id' => Auth::id(),
-            'question' => $request->question,
-            'hours_earned' => $request->hours_earned ?? 0,
-            'coins' => $request->coins ?? 0,
-            'points' => $request->points ?? 0,
-        ]);
-        return $this->apiResponse('success', 200, 'question created successfully', $question);
+  public function store(Request $request){
+    // Original question from frontend
+    $originalQuestion = $request->question;
+
+    // Target language code (e.g., 'hi' for Hindi, 'es' for Spanish)
+    $targetLanguage = $request->language ?? 'en';
+
+    // Translate the question
+    $translatedQuestion = $originalQuestion;
+    try {
+        $translator = new GoogleTranslate($targetLanguage);
+        $translatedQuestion = $translator->translate($originalQuestion);
+    } catch (\Exception $e) {
+        // Fallback to original question if translation fails
+        \Log::error("Translation failed: " . $e->getMessage());
     }
+
+    // Save the question to database
+    $question = QuickSolveQuestion::create([
+        'category_id' => $request->category_id ?? null,
+        'subcategory_id' => $request->subcategory_id ?? null,
+        'user_id' => Auth::id(),
+        'question' => $translatedQuestion, // Save the translated version
+        'original_question' => $originalQuestion, // Optional: Save original for reference
+        'language' => $targetLanguage,
+        'hours_earned' => $request->hours_earned ?? 0,
+        'coins' => $request->coins ?? 0,
+        'points' => $request->points ?? 0,
+    ]);
+
+    return $this->apiResponse('success', 200, 'Question saved in  successfully', $question);
+}
 
     // Update a question
     public function update(Request $request, $id)

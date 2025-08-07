@@ -42,7 +42,7 @@ class ConfigSettingTableSeeder extends Seeder
         ConfigSetting::updateOrCreate([
             'type' => 'smtp',
             'key' => 'password'],
-            ['value' => 'cffohbxqithkysai'
+            ['value' => ''
         ]);
         ConfigSetting::updateOrCreate([
             'type' => 'smtp',

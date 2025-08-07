@@ -15,7 +15,7 @@ class EmailTemplateSeeder extends Seeder
     {
         EmailTemplate::updateOrCreate([
             'template_name' => 'Otp_Verification'
-        ],[
+        ], [
             'template' => '<!doctype html>
                 <html>
                 <head>
@@ -120,7 +120,7 @@ class EmailTemplateSeeder extends Seeder
         ]);
         EmailTemplate::updateOrCreate([
             'template_name' => 'Forget_password'
-        ],[
+        ], [
             'template' => '<!doctype html>
                 <html>
                 <head>
@@ -225,7 +225,7 @@ class EmailTemplateSeeder extends Seeder
 
         EmailTemplate::updateOrCreate([
             'template_name' => 'Web_Forget_password'
-        ],[
+        ], [
             'template' => '<!doctype html>
                 <html>
                 <head>
@@ -343,7 +343,7 @@ class EmailTemplateSeeder extends Seeder
 
         EmailTemplate::updateOrCreate([
             'template_name' => 'Account_detail'
-        ],[
+        ], [
             'template' => '<!doctype html>
                 <html>
                 <head>
@@ -516,8 +516,8 @@ class EmailTemplateSeeder extends Seeder
             'status' => 1,
             'created_at' => date('Y-m-d H:i:s'),
         ]);
-        
-           EmailTemplate::updateOrCreate(
+
+        EmailTemplate::updateOrCreate(
             ['template_name' => 'Contact_submit'],
             [
                 'template' => '<!doctype html>
@@ -572,12 +572,13 @@ class EmailTemplateSeeder extends Seeder
                 'subject' => 'Thank you for reaching out',
                 'status' => 1,
                 'created_at' =>  date('Y-m-d H:i:s'),
-                
-            ]);
-            EmailTemplate::updateOrCreate([
-                'template_name' => 'Newsletter_Subscribed'
-            ],[
-                'template' => '<!doctype html>
+
+            ]
+        );
+        EmailTemplate::updateOrCreate([
+            'template_name' => 'Newsletter_Subscribed'
+        ], [
+            'template' => '<!doctype html>
             <html>
             <head>
                 <title>{{$companyName}}</title>
@@ -628,16 +629,16 @@ class EmailTemplateSeeder extends Seeder
                 </table>
             </body>
             </html>',
-                'subject' => 'Thank you for subscribing to our newsletter!',
-                'status' => 1,
-                'created_at' => date('Y-m-d H:i:s'),
-            ]);
+            'subject' => 'Thank you for subscribing to our newsletter!',
+            'status' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
 
 
-            EmailTemplate::updateOrCreate([
-                'template_name' => 'Newsletter_Announcement'
-            ], [
-                'template' => '<!doctype html>
+        EmailTemplate::updateOrCreate([
+            'template_name' => 'Newsletter_Announcement'
+        ], [
+            'template' => '<!doctype html>
             <html>
             <head>
                 <title>{{companyName}}</title>
@@ -676,14 +677,90 @@ class EmailTemplateSeeder extends Seeder
                 </table>
             </body>
             </html>',
-                'subject' => 'Latest Announcement from {{companyName}}',
-                'status' => 1,
-                'created_at' => date('Y-m-d H:i:s'),
-            ]);
-
-            
-            
+            'subject' => 'Latest Announcement from {{companyName}}',
+            'status' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
 
 
+        EmailTemplate::updateOrCreate([
+            'template_name' => 'new_contact'
+        ], [
+            'template' => '<!doctype html>
+        <html>
+        <head>
+            <title>New Contact Message - {{$companyName}}</title>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <meta name="x-apple-disable-message-reformatting">
+            <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+            <style type="text/css">
+                body, td, p {
+                    font-family: "Roboto", Helvetica, Arial, sans-serif !important;
+                }
+            </style>
+        </head>
+        <body>
+    <table style="margin: auto; background:#f5f5f5;" role="presentation" border="0" cellspacing="0" cellpadding="0" align="center" width="600">
+        <tbody>
+            <tr>
+                <td style="padding: 1.5em 2.5em; background-color:#79a1e1;" align="center">
+                    <h2 style="color:#ffffff;margin:0;">{{$companyName}}</h2>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 2em; background-color: #ffffff;">
+                    <p style="font-size: 18px; font-weight: bold; margin: 0;">Hello Admin,</p>
+                    <p style="font-size: 16px; margin-top: 15px;">
+                        A new contact form submission has been received. Below are the details:
+                    </p>
+
+                    <table cellpadding="6" cellspacing="0" style="font-size: 15px; margin-top: 15px; border-collapse: collapse;">
+                        <tr>
+                            <td><strong>Name:</strong></td>
+                            <td>{{$name}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Email:</strong></td>
+                            <td>{{$email}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Subject:</strong></td>
+                            <td>{{$subject}}</td>
+                        </tr>
+                        <tr>
+                            <td valign="top"><strong>Message:</strong></td>
+                            <td>{{$user_message}}</td>
+                        </tr>
+                    </table>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        You can reply to this user directly at <a href="mailto:{{$email}}">{{$email}}</a>.
+                    </p>
+
+                    <p style="font-size: 16px; margin-top: 30px;">
+                        Thanks,<br>
+                        <strong>{{$companyName}} System</strong>
+                    </p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="padding: 15px 20px; background:#79a1e1;" align="center">
+                    <p style="margin: 0; font-size: 12px; color:#fff;">&copy; {{YEAR}} {{$companyName}}. All Rights Reserved.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
+',
+            'subject' => 'New Message',
+            'status' => 1,
+            'created_at' => date('Y-m-d H:i:s'),
+        ]);
     }
 }

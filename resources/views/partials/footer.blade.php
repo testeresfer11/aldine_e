@@ -20,7 +20,7 @@
           font-weight: bold;
       }
         #modal > div {
-            background-color: #fefefe !important;
+            background-color: #fffef7 !important;
             margin: 5% auto !important;
             padding: 40px !important;
             border-radius: 16px !important;
@@ -48,28 +48,136 @@
         .close:focus {
             color: #333;
         }
-footer a{
-    cursor: pointer;
-}
+        footer a{
+            cursor: pointer;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: #333;
+        }
+
+      .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+          .header p {
+            font-size: 1.2rem;
+            opacity: 0.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .contact-form {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            border: 1px solid #e9ecef;
+        }
+
+         .contact-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+          .contact-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+          .contact-form input,   .contact-form textarea,   .contact-form select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #87ceeb;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+          .contact-form .btn {
+            background: #87ceeb;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+        }
+
+          .contact-form .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(135, 206, 235, 0.4);
+            background: #6bb6ff;
+        }
+
+        @media (max-width: 768px) {
+             .header h1 {
+                font-size: 2rem;
+            }
+            
+        }
    </style>
     <footer style="background: #ffffff; padding: 40px 24px; border-top: 2px solid #f0f0f0; margin-top: 0; display: block; width: 100%;">
         <div class="footer-div" style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
             <div style="color: #666666; font-size: 14px; font-weight: 400;">© 2025 EduPalz Inc. All rights reserved.</div>
             <div class="foooter-links" style="display: flex; gap: 32px; align-items: center;">
-                <a  onclick="openModal('privacy')" style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" onmouseover="this.style.color='#333333'" onmouseout="this.style.color='#666666'">Privacy Policy</a>
-                <a  onclick="openModal('terms')" style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" onmouseover="this.style.color='#333333'" onmouseout="this.style.color='#666666'">Terms & Conditions</a>
-                <a  onclick="openModal('contact')" style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" onmouseover="this.style.color='#333333'" onmouseout="this.style.color='#666666'">Contact Us</a>
+                 <div class="col-12 col-md-3">
+                    <ul class="footer-social">
+                      <li class="nav-item"><a class="social-link" href="{{ $instagram }}"><img src="{{ asset('images/insta.svg') }}"></a></li>
+                      <li class="nav-item"><a class="social-link" href="{{ $tiktok }}"><img src="{{ asset('images/tik.svg') }}"></a></li>
+                    </ul>
+                  </div>
+
+            </div>
+        </div>
+        <div class="footer-links" style="display: flex; justify-content: center; align-items: center; gap: 12px;">
+                <a 
+                href="https://app.termly.io/policy-viewer/policy.html?policyUUID=1f855575-16f2-48ee-b72c-de3c4883c9a6" 
+                target="_blank" 
+                style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" 
+                onmouseover="this.style.color='#333333'" 
+                onmouseout="this.style.color='#666666'">
+                Privacy Policy
+            </a>
+
+            <a 
+                href="https://app.termly.io/policy-viewer/policy.html?policyUUID=d0786a20-6e32-47c9-b88f-07cf9f8b399d" 
+                target="_blank" 
+                style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" 
+                onmouseover="this.style.color='#333333'" 
+                onmouseout="this.style.color='#666666'">
+                Terms & Conditions
+            </a>
+                <a  href="{{ url('/contact-us') }}" style="color: #666666; text-decoration: none; font-size: 14px; font-weight: 400; transition: color 0.2s ease;" onmouseover="this.style.color='#333333'" onmouseout="this.style.color='#666666'">Contact Us</a>
                 <div id="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5);">
                   <div style="position: relative; width: 80%; max-width: 600px; margin: 0 auto; padding: 20px; background-color: white;">
                       <span class="close" style="position: absolute; top: 10px; right: 10px; font-size: 24px; cursor: pointer;">&times;</span>
                       <div id="modal-content"></div> 
                   </div>
               </div>
-            </div>
         </div>
     </footer>
 
-    <script>
+    <!-- script>
         // Modal functionality
         function openModal(type) {
             const modal = document.getElementById('modal');
@@ -116,37 +224,44 @@ footer a{
                 `;
             } else if (type === 'contact') {
                 modalContent = `
-                    <h2 style="color: #1E1E1E; margin-bottom: 24px;">Contact Us</h2>
-                    
-                    <h3 style="color: #1E1E1E; margin-top: 24px; margin-bottom: 12px;">Get in Touch</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.6;">We'd love to hear from you! Whether you have questions, feedback, or need support, our team is here to help.</p>
-                    
-                    <h3 style="color: #1E1E1E; margin-top: 24px; margin-bottom: 12px;">Email</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.6;">
-                        <strong>General Support:</strong> support@edupalz.com<br>
-                        <strong>Technical Issues:</strong> tech@edupalz.com<br>
-                        <strong>Privacy Questions:</strong> privacy@edupalz.com<br>
-                        <strong>Business Inquiries:</strong> hello@edupalz.com
-                    </p>
-                    
-                    <h3 style="color: #1E1E1E; margin-top: 24px; margin-bottom: 12px;">Response Time</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.6;">We typically respond to all inquiries within 24-48 hours. For urgent technical issues, we aim to respond within 4-6 hours during business hours.</p>
-                    
-                    <h3 style="color: #1E1E1E; margin-top: 24px; margin-bottom: 12px;">Social Media</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.6;">
-                        Follow us for updates and student success stories:<br>
-                        <strong>Instagram:</strong> @edupalzapp<br>
-                        <strong>TikTok:</strong> @edupalz<br>
-                        <strong>Twitter:</strong> @edupalzapp
-                    </p>
-                    
-                    <h3 style="color: #1E1E1E; margin-top: 24px; margin-bottom: 12px;">Office</h3>
-                    <p style="margin-bottom: 16px; line-height: 1.6;">
-                        EduPalz Inc.<br>
-                        123 Innovation Drive<br>
-                        Toronto, ON M5V 3A8<br>
-                        Canada
-                    </p>
+                  <div class="header contact-frm">
+                            <h1>Get In Touch</h1>
+                            <p>Got questions, feedback, or just want to say hi? We'd love to hear from you! Drop us a message and we'll get back to you ASAP.</p>
+                        </div>
+
+                        <div class="contact-form">
+                            <h2 style="margin-bottom: 1.5rem; color: #333;">Send us a Message</h2>
+                            <form id="contactForm">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="subject">I'm reaching out about...</label>
+                                    <select id="subject" name="subject" required>
+                                        <option value="">Select a topic</option>
+                                        <option value="feedback">General Feedback</option>
+                                        <option value="technical">Technical Issue/Bug Report</option>
+                                        <option value="feature">Feature Request</option>
+                                        <option value="account">Account Help</option>
+                                        <option value="other">Something Else</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="message">Message</label>
+                                    <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn">Send Message</button>
+                            </form>
+                        </div>
                 `;
             }
             
@@ -154,6 +269,11 @@ footer a{
             modal.style.display = 'block';
         }
         
+
+
+        //contact modal//
+
+
         // Close modal when clicking the X or outside the modal
         document.addEventListener('DOMContentLoaded', function() {
             const modal = document.getElementById('modal');
@@ -169,7 +289,9 @@ footer a{
                 }
             }
         });
-    </script>
+    </script> -->
+
+
 
 <!-- <footer class="footer-bottom">
   <div class="container-cstm">

@@ -7,6 +7,22 @@ use App\Http\Controllers\Api\{SubjectController, PostShareController,ConnectionC
 use App\Models\NotificationPreference;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Mail;
+
+
+Route::get('/send-test-mails', function () {
+    try {
+        Mail::raw('Test email body', function ($message) {
+            $message->to('preeti@yopmail.com')
+                    ->from('info@edupalz.com', 'EDUPALZ')
+                    ->subject('Test Email');
+        });
+
+        return 'Test email sent successfully!';
+    } catch (\Exception $e) {
+        return 'Failed to send email: ' . $e->getMessage();
+    }
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return response()->json([
@@ -31,9 +47,12 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('forget-password', 'forgetPassword');
     Route::post('set-new-password', 'setNewPassword');
     Route::get('send-daily-push', 'sendDailyEncouragementNotification');
+    Route::post('social-login','handleSocialLogin');
+
     Route::get('get-programs', 'getPrograms');
     Route::get('get-majors', 'getMajors');
     Route::post('upload-image', 'uploadImage');
+    Route::post('upload-audio', 'uploadAudio');
 
 
 
@@ -167,6 +186,7 @@ Route::middleware(['auth:sanctum', 'user'])->group(function () {
             Route::post('send-message', 'saveMessage');
             Route::get('chat-list/{user_id}','getUserChatRooms');
             Route::get('get-all-messages/{room_id}','getAllMessagesInRoom');
+            Route::post('mark-room-read','markMessageAsRead');
 
 
   

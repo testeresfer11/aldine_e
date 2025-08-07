@@ -38,6 +38,8 @@
                             
                             
                                 <div class="response-data ml-4">
+
+                                  
                                     <h6 class="f-14 mb-1">
                                       <span class="semi-bold qury">Name :</span> 
                                       <span class="text-muted">{{ $user->full_name }}</span>
@@ -50,21 +52,21 @@
 
                                     <h6 class="f-14 mb-1">
                                       <span class="semi-bold qury">Gender :</span> 
-                                      <span class="text-muted">{{ $user->gender ? $user->gender ?? 'N/A' : 'N/A' }}</span>
+                                      <span class="text-muted">{{$user->gender ?? 'N/A' }}</span>
                                     </h6>
 
                                     <h6 class="f-14 mb-1">
                                       <span class="semi-bold qury">Date Of Birth:</span> 
-                                      <span class="text-muted">{{ $user->birthday ? $user->birthday ? strtoupper($user->birthday): 'N/A' : 'N/A' }}</span>
+                                      <span class="text-muted">{{ $user->birthday  ?? $user->birthday}} </span>
                                     </h6>
 
                                     <h6 class="f-14 mb-1">
                                       <span class="semi-bold qury">Phone Number :</span> 
-                                      <span class="text-muted"  class="userPhone">{{ $user->phone_number ? $user->phone_number ?? 'N/A' : 'N/A' }}</span>
+                                      <span class="text-muted"  class="userPhone">{{ $user->phone_number  ?? 'N/A' }}</span>
                                     </h6>
                                     <h6 class="f-14 mb-1">
                                       <span class="semi-bold qury">Country Short Code :</span> 
-                                      <span class="text-muted">{{ $user->country_short_code ? $user->country_short_code ? strtoupper($user->country_short_code): 'N/A' : 'N/A' }}</span>
+                                      <span class="text-muted">{{ $user->country_short_code ?? 'N/A' }}</span>
                                     </h6>
 
                                     <h6 class="f-14 mb-1">
@@ -82,6 +84,67 @@
                                       <span class="text-muted" id="userDateTime">{{ convertDate($user->created_at) }}</span>
                                     </h6>
                                     
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div style="margin-top: 24px;"></div>
+            <div class="card">
+            <div class="card-body">
+                <form class="forms-sample">
+                    <div class="form-group">
+                        <div class="row align-items-center">
+                           
+                            <div class="col-12 col-md-8">
+                            
+                            
+                                <div class="response-data ml-4">
+
+                                  
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Language :</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->language ?? 'N/A' }}</span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">School Name :</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->school_name ?? 'N/A' }}</span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Education Level :</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->education_level ?? 'N/A'}}</span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Academic Year:</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->academic_year ?? 'N/A'}} </span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Graduating Year :</span> 
+                                      <span class="text-muted"  class="userPhone">{{ $user->UserDetail->graduating_year ?? 'N/A' }}</span>
+                                    </h6>
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Program :</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->program ?? 'N/A' }}</span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Major :</span> 
+                                      <span class="text-muted">{{ $user->UserDetail->major ?? 'N/A' }}</span>
+                                    </h6>
+
+                                    <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Minor :</span>
+                                       <span class="text-muted" >{{ $user->UserDetail->minor ?? 'N/A' }}</span>
+                                    </h6>
+
+                                   
                                 </div>
                             </div>
                         </div>
