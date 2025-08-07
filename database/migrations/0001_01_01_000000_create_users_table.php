@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('country_code')->nullable();
             $table->string('country_short_code')->nullable();
             $table->string('address')->nullable();
+            $table->string('provider')->nullable();
+            $table->string('provider_id')->nullable();
             $table->text('phone_number')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->tinyInteger('is_profile_updated')->default(0);

@@ -26,4 +26,9 @@ public function latestMessage()
 {
     return $this->hasOne(ChatMessage::class)->latestOfMany();
 }
+
+public function users()
+{
+    return $this->belongsToMany(User::class, 'chat_room_users', 'chat_room_id', 'user_id');
+}
 }

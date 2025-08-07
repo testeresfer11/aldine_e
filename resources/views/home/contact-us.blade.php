@@ -32,28 +32,45 @@
                 </div>
             </div> -->
             <div class="col-12 col-md-12 mb-4">
-                <div class="contct-banenr-cnt">
-                    <h2 class="f-42 semi-bold">Reach Us</h2>
-                    <p class="f-20 pb-4 grey">We’d love to hear from you! Drop us a message, and we’ll be in touch soon.</p>
-                    <div class="contact-form-bx relative">
-                    <form id="contactForm" action="{{ route('contact-us') }}" method="POST">
+                 <div class="header contact-frm">
+                            <h1>Get In Touch</h1>
+                            <p>Got questions, feedback, or just want to say hi? We'd love to hear from you! Drop us a message and we'll get back to you ASAP.</p>
+                        </div>
+
+                        <div class="contact-form">
+                            <h2 style="margin-bottom: 1.5rem; color: #333;">Send us a Message</h2>
+                            <form id="contactForm" action="{{ route('contact-us') }}" method="POST">
                                 @csrf
-                                <div class="form-field mb-4">
-                                <label for="fname" class="d-block">Name</label>
-                                <input type="text" id="fname" name="name"value="{{ old('name') }}" placeholder="Enter your name">
+                                <div class="form-group">
+                                    <label for="name">Name</label>
+                                    <input type="text" id="name" name="name" required>
                                 </div>
-                                <div class="form-field mb-4">
-                                <label for="email" class="d-block">Email</label>
-                                <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="Enter your email">
+                                
+                                <div class="form-group">
+                                    <label for="email">Email</label>
+                                    <input type="email" id="email" name="email" required>
                                 </div>
-                                <div class="form-field mb-4">
-                                <label for="message" class="d-block">How can we help?</label>
-                                <textarea name="message" class="form-area" rows="5" placeholder="Enter your message">{{ old('message') }}</textarea>
+                                
+                                <div class="form-group">
+                                    <label for="subject">I'm reaching out about...</label>
+                                    <select id="subject" name="subject" required>
+                                        <option value="">Select a topic</option>
+                                        <option value="feedback">General Feedback</option>
+                                        <option value="technical">Technical Issue/Bug Report</option>
+                                        <option value="feature">Feature Request</option>
+                                        <option value="account">Account Help</option>
+                                        <option value="other">Something Else</option>
+                                    </select>
                                 </div>
-                                <button class="sbmt-btn text-white" id="submitBtn">Submit</button>
+                                
+                                <div class="form-group">
+                                    <label for="message">Message</label>
+                                    <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn" id="submitBtn">Send Message</button>
                             </form>
-                      </div>
-                </div>
+                        </div>
             </div>
            
         </div>

@@ -9,6 +9,8 @@ use App\Models\PostShare;
 use App\Models\Reply;
 use App\Traits\SendResponseTrait;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class PostController extends Controller
 {
@@ -19,34 +21,45 @@ class PostController extends Controller
      * createdDate  : 07-04-2025
      * purpose      : get all posts
      */
-    public function index(Request $request){
-        $userId = auth()->id();
+public function index(Request $request)
+{
+    $userId = auth()->id();
+    $perPage = $request->input('per_page', 10); // default 10
 
-        $query = Post::with([
-            'user:id,first_name,email,profile_pic'
-        ])->withCount([
-            'likedByUsers as total_likes',
-            'allComments as total_comments'
-        ]);
+    // Fetch all posts with relationships and counts
+    $query = Post::with([
+        'user:id,first_name,email,profile_pic'
+    ])->withCount([
+        'likedByUsers as total_likes',
+        'allComments as total_comments'
+    ]);
 
-        // Filter by current user
-        $query->where('user_id', $userId);
-
-        // Optional: Filter by type
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
-        }
-
-        $posts = $query->latest()->get();
-
-        // Attach is_liked status
-        $posts->transform(function ($post) use ($userId) {
-            $post->is_liked = $post->likedByUsers()->where('user_id', $userId)->exists() ? 1 : 0;
-            return $post;
-        });
-
-        return $this->apiResponse('success', 200, 'All posts fetched successfully', $posts);
+    if ($request->filled('type')) {
+        $query->where('type', $request->type);
     }
+
+    $allPosts = $query->latest()->get(); //  fetch all first
+
+    // Add flags and sort
+    $transformed = $allPosts->map(function ($post) use ($userId) {
+        $post->is_liked = $post->likedByUsers()->where('user_id', $userId)->exists() ? 1 : 0;
+        $post->is_pinned = $post->pinnedByUsers()->where('user_id', $userId)->exists() ? 1 : 0;
+        return $post;
+    })->sortByDesc('is_pinned')->values(); // 👈 sort before paginate
+
+    // Paginate manually
+    $currentPage = LengthAwarePaginator::resolveCurrentPage();
+    $paginated = new LengthAwarePaginator(
+        $transformed->forPage($currentPage, $perPage),
+        $transformed->count(),
+        $perPage,
+        $currentPage,
+        ['path' => request()->url(), 'query' => request()->query()]
+    );
+
+    return $this->apiResponse('success', 200, 'All posts fetched successfully', $paginated);
+}
+
 
 
 
@@ -64,8 +77,8 @@ class PostController extends Controller
     public function store(Request $request)
 {
     $request->validate([
-        'content' => 'required|string|max:5000',
-        'title' => 'required|string|max:30',
+        'content' => 'required',
+        'title' => 'required',
         'type' => 'required|string|exists:post_types,slug',
         'images' => 'nullable|array',
         
@@ -97,8 +110,8 @@ class PostController extends Controller
    public function update(Request $request, $id)
 {
     $request->validate([
-        'title' => 'required|string|max:30',
-        'content' => 'required|string|max:5000',
+        'title' => 'required',
+        'content' => 'required',
         'type' => 'required|string|exists:post_types,slug',
         'images' => 'nullable|array',
         'images.*' => 'url'
@@ -198,7 +211,11 @@ class PostController extends Controller
 
         $user->pinnedPosts()->attach($post);
 
-        return $this->apiResponse('success', 200, 'Post pinned successfully');
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Post pinned successfully',
+            
+        ], 200);
     }
 
     /*end method pinPost */
@@ -216,7 +233,11 @@ class PostController extends Controller
 
             $user->pinnedPosts()->detach($post);
 
-            return $this->apiResponse('success', 200, 'Post unpinned successfully');
+           return response()->json([
+            'status' => 'success',
+            'message' => 'Post unpinned successfully',
+            
+        ], 200);
     }
      /*end method unpinPost */
 
@@ -269,7 +290,7 @@ class PostController extends Controller
 	    $senderId = auth()->id();
 
 	    // Get the latest shared post per recipient, avoiding duplicates
-	    $latestShares = PostShare::with('recipient') // assumes recipient() relation defined
+	    $latestShares = PostShare::with('recipient') 
 		->where('sender_id', $senderId)
 		->orderBy('created_at', 'desc')
 		->get()

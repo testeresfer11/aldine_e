@@ -119,7 +119,7 @@ trait SendResponseTrait
 
     
     
-    public function sendPushNotification($title, $body, $type, $shipment_id,$user_id) {
+    public function sendPushNotification($title, $body, $type,$user_id) {
         $topic = 'userId_'.$user_id;
 
         $firebase = (new Factory)

@@ -4,13 +4,12 @@ namespace App\Http\Controllers\user;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\UserResource;
-use App\Models\{NotificationPreference, OtpManagement, Role, User, UserDetail, Program,Major,Avatar};
+use App\Models\{NotificationPreference, OtpManagement, Role, User, UserDetail, Program,Major,Avatar,UserFavoriteSubject};
 use App\Notifications\{AccountDeleteNotification, UserNotification};
 use App\Traits\SendResponseTrait;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\{Auth, Hash, Validator};
+use Illuminate\Support\Facades\{Auth, Hash, Validator,Str};
 
 class AuthController extends Controller
 {
@@ -245,6 +244,10 @@ class AuthController extends Controller
             $user                 = $request->user();
 
             $user->save();
+                $hasFavSubject = UserFavoriteSubject::where('user_id', $user->id)->exists();
+
+                $isFavSubject = $hasFavSubject ? 1 : 0;
+
 
             $data = [
                 'access_token'      => $user->createToken('AuthToken')->plainTextToken,
@@ -254,6 +257,8 @@ class AuthController extends Controller
                 'last_name'         => $user->last_name,
                 'email'             => $user->email,
                 'is_verified'       => $user->is_email_verified,
+                'is_profile_updated'=>$user->is_profile_updated,
+                'is_fav_subject_added' =>$isFavSubject
 
             ];
 
@@ -262,6 +267,83 @@ class AuthController extends Controller
             return $this->apiResponse('error', 400, $e->getMessage());
         }
     }
+    /*end method login */
+
+
+
+public function handleSocialLogin(Request $request)
+{
+    // Validate the incoming request
+    $validator = Validator::make($request->all(), [
+        'first_name'   => 'required|string',
+        'email'        => 'required|string|email',
+        'provider'     => 'required|string',
+        'provider_id'  => 'required|string',
+    ]);
+
+    // Return validation errors if any
+    if ($validator->fails()) {
+        return $this->apiResponse('error', 422, $validator->errors()->first());
+    }
+
+    // Check if user already exists
+    $user = User::where('email', $request->email)->first();
+  $role = Role::where('name', config('constants.ROLES.USER'))->first();
+    if ($user) {
+        // Update provider info if not set
+        $user->update([
+            'provider'    => $request->provider,
+            'provider_id' => $request->provider_id,
+        ]);
+
+        $accessToken = $user->createToken('AuthToken')->plainTextToken;
+         $hasFavSubject = UserFavoriteSubject::where('user_id', $user->id)->exists();
+
+                $isFavSubject = $hasFavSubject ? 1 : 0;
+        return $this->apiResponse('success', 200, 'Login successful', [
+            'access_token' => $accessToken,
+            'id'           => $user->id,
+            'full_name'    => $user->first_name . ' ' . $user->last_name,
+            'first_name'   => $user->first_name,
+            'last_name'    => $user->last_name,
+            'email'        => $user->email,
+            'is_verified'  => 1,
+            'is_profile_updated'=>$user->is_profile_updated,
+            'is_fav_subject_added' =>$isFavSubject
+
+        ]);
+    }
+
+    // Create a new user
+    $user = User::create([
+        'first_name'        => $request->first_name,
+        'last_name'         => $request->first_name,
+        'email'             => $request->email,
+        'email_verified_at' => Carbon::now(),
+        'password'          => Hash::make('password'),
+        'provider'          => $request->provider,
+        'provider_id'       => $request->provider_id,
+        'role_id'           =>$role->id
+    ]);
+
+    $accessToken = $user->createToken('AuthToken')->plainTextToken;
+    $hasFavSubject = UserFavoriteSubject::where('user_id', $user->id)->exists();
+
+    $isFavSubject = $hasFavSubject ? 1 : 0;
+
+    return $this->apiResponse('success', 200, 'Registration successful', [
+        'access_token' => $accessToken,
+        'id'           => $user->id,
+        'full_name'    => $user->first_name,
+        'first_name'   => $user->first_name,
+        'last_name'    => $user->first_name,
+        'email'        => $user->email,
+        'is_verified'  => (int)1,
+        'is_profile_updated' =>$user->is_profile_updated,
+        'is_fav_subject_added' =>$isFavSubject
+
+    ]);
+}
     /*end method login */
 
     /**
@@ -363,10 +445,11 @@ class AuthController extends Controller
             }
 
             if ($request->isMethod('post')) {
+
                 $validator = Validator::make($request->all(), [
                     'first_name'        => 'required|string|max:255',
                     
-                    'gender'            => 'nullable|in:male,female,other',
+                    'gender'            => 'nullable',
                     'birthday'          => 'nullable|date',
                     'country'           => 'nullable|string|max:255',
                     'bio'               => 'nullable|string',
@@ -471,6 +554,47 @@ class AuthController extends Controller
         return $this->apiResponse('error', 400, $e->getMessage());
     }
 }
+
+
+ /**
+     * functionName : upload audio
+     * createdDate  : 24-04-2025
+     * purpose      : uplaod image and retun image url
+     */
+   public function uploadAudio(Request $request){
+    try {
+        // Validate input
+        $request->validate([
+            'audio' => 'required|mimes:mp3,wav,ogg|max:10240', // Max 10MB
+        ]);
+
+        if ($request->hasFile('audio')) {
+            $audio = $request->file('audio');
+            $audioName = time() . '_' . uniqid() . '.' . $audio->getClientOriginalExtension();
+            $path = $audio->storeAs('images', $audioName, 'public'); // stores in storage/app/public/audios
+
+            $baseUrl = config('app.url'); 
+            $audioUrl = $baseUrl . '/storage/' . $path;
+
+            return $this->apiResponse(
+                'success',
+                200,
+                'Audio ' . config('constants.SUCCESS.UPDATE_DONE'),
+                [
+                    'audio_url' => $audioUrl,
+                    'base_url' => $baseUrl,
+                    'relative_path' => '/storage/' . $path
+                ]
+            );
+        }
+
+        return $this->apiResponse('error', 400, 'No audio file found.');
+        
+    } catch (\Exception $e) {
+        return $this->apiResponse('error', 400, $e->getMessage());
+    }
+ }
+
 
 
     /*end method profile */

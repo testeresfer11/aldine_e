@@ -23,7 +23,7 @@
           <div class="card-body">
             <h4 class="card-title">Edit User</h4>
              
-            <form class="forms-sample" id="editPatientForm" action="{{route('admin.user.edit',['id' => $user->id])}}" method="POST" enctype="multipart/form-data">
+            <form class="forms-sample" id="Edit-User" action="{{route('admin.user.edit',['id' => $user->id])}}" method="POST" enctype="multipart/form-data">
               @csrf
               
               <div class="form-group">
@@ -75,10 +75,15 @@
                     <div class="col-6">
                         <label for="exampleInputGender">Gender</label>
                         <select name="gender" id="exampleInputGender" class="form-control  @error('gender') is-invalid @enderror" >
+                            
                             <option value="">Select Gender</option>
-                            <option value="male" {{$user->gender ? (($user->gender == 'male' ) ? 'selected': '') : ''}}>Male</option>
-                            <option value="female" {{$user->gender ? (($user->gender == 'female' ) ? 'selected': '') : ''}}>Female</option>
-                            <option value="other" {{$user->gender ? (($user->gender == 'other' ) ? 'selected': '') : ''}}>Other</option>
+                                <option value="male" {{ $user->gender == 'male' ? 'selected' : '' }}>Male</option>
+                                <option value="female" {{ $user->gender == 'female' ? 'selected' : '' }}>Female</option>
+                                <option value="they/them" {{ $user->gender == 'they/them' ? 'selected' : '' }}>They/Them</option>
+                                <option value="he/him" {{ $user->gender == 'he/him' ? 'selected' : '' }}>He/Him</option>
+                                <option value="she/her" {{ $user->gender == 'she/her' ? 'selected' : '' }}>She/Her</option>
+                                <option value="other" {{ $user->gender == 'other' ? 'selected' : '' }}>Other</option>
+
                         </select>
                         @error('gender')
                             <span class="invalid-feedback" role="alert">
@@ -153,109 +158,123 @@
 </div>    
 @endsection
 @section('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBZ09dtOd8YHF_ZCbfbaaMHJKiOr26noY8&libraries=places" ></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@23.6.1/build/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const input = document.querySelector("#phone");
+        const countryShortCode = document.querySelector("input[name='country_short_code']").value;
+        const iti = window.intlTelInput(input, {
+            utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@23.6.1/build/js/utils.js",
+            initialCountry: countryShortCode,
+            formatOnDisplay: false,  
+            nationalMode: false,    
+        });
 
+        
+        document.querySelector("#phone").addEventListener("change", function(event) {
+            const countryData = iti.getSelectedCountryData();
+            
+            let phoneNumber = iti.getNumber("e164");
+            phoneNumber = phoneNumber.replace(/\D/g, '');
+           
+            document.querySelector("input[name='country_code']").value = countryData.dialCode;
+            document.querySelector("input[name='country_short_code']").value = countryData.iso2;
 
+            input.value = phoneNumber;
+        });
+    });
+</script>
 
 <script>
-$(document).ready(function () {
-    // Add custom method to prevent only spaces
-    $.validator.addMethod("noOnlySpace", function (value, element) {
-        return $.trim(value).length > 0;
-    }, "This field cannot be empty or only spaces.");
+  $(document).ready(function() {
 
-    // Add custom method to disallow future date
-    $.validator.addMethod("noFutureDate", function (value, element) {
-        if (!value) return true; // allow empty if not required
-        const inputDate = new Date(value);
-        const today = new Date();
-        today.setHours(0,0,0,0); // ignore time
-        return inputDate <= today;
-    }, "Birth date cannot be in the future.");
+    var err = false;
+    var autocomplete = new google.maps.places.Autocomplete(
+        document.getElementById('address'), {
+            types: ['geocode']
+        }
+    );
+    autocomplete.addListener('place_changed', function() {
+        var place = autocomplete.getPlace();
+        var postalCode = '';
+        if (place.address_components) {
+            for (var i = 0; i < place.address_components.length; i++) {
+                var component = place.address_components[i];
+                if (component.types.includes('postal_code')) {
+                    postalCode = component.long_name;
+                    break;
+                }
+            }
+            $('#exampleInputPinCode').val(postalCode);
+        }
+    });
 
-    // Add custom rule for file size
-    $.validator.addMethod("filesize", function (value, element, param) {
-        return this.optional(element) || (element.files[0].size <= param * 1024);
-    }, "File is too large.");
-
-    // Initialize form validation
-    $("#editPatientForm").validate({
+    $("#Edit-User").submit(function(e){
+        e.preventDefault();
+    }).validate({
         rules: {
-            name: {
+            first_name: {
                 required: true,
-                maxlength: 255,
-                noOnlySpace: true
+                noSpace: true,
+                minlength: 3,
+                maxlength:25,
             },
+            
             email: {
                 required: true,
-                email: true,
-                noOnlySpace: true
+                email: true
             },
-            password: {
+            phone_number: {
+                number: true,
+                // minlength:10,
+                maxlength: 12,
+            },
+            birthday: {
                 required: true,
-                minlength: 6,
-                noOnlySpace: true
-            },
-            gender: {
-                required: true
-            },
-            birth_date: {
                 date: true,
-                noFutureDate: true
-            },
-            profile_pic: {
-                extension: "jpg|jpeg|png",
-                filesize: 2048 // KB
-            },
-            id_proof: {
-                extension: "jpg|jpeg|png|pdf",
-                filesize: 4096 // KB
-            },
-            mobile_no: {
-                digits: true,
-                maxlength: 20
-            },
-            country_code: {
-                maxlength: 10
+                dobValidation: true
             }
         },
         messages: {
-            profile_pic: {
-                extension: "Only JPG, JPEG, PNG files are allowed.",
-                filesize: "Profile picture must be less than 2MB."
+            first_name: {
+                required: "First name is required",
+                minlength: "First name must consist of at least 3 characters",
+                maxlength: "First name must not contains more then 25 characters."
             },
-            id_proof: {
-                extension: "Only JPG, JPEG, PNG, or PDF files are allowed.",
-                filesize: "ID proof must be less than 4MB."
+            last_name: {
+                minlength: "Last name must consist of at least 3 characters",
+                maxlength: "Last name must not contains more then 25 characters."
+            },
+            email: {
+                email: "Please enter a valid email address"
+            },
+            phone_number: {
+                number: 'Only numeric value is acceptable',
+                minlength:  'Phone number must be 10 digits',
+                maxlength:  'Phone number must be 10 digits'
+            },
+            birthday: {
+                required: "Date of birth is required.",
+                dobValidation: "You must be at least 13 years old."
             }
         },
-        errorElement: 'span',
-        errorClass: 'text-danger',
-        highlight: function (element) {
-            $(element).addClass('is-invalid');
-        },
-        unhighlight: function (element) {
-            $(element).removeClass('is-invalid');
-        },
-        submitHandler: function (form) {
-            const checkForbiddenExt = function (fileInputName) {
-                const fileInput = document.getElementsByName(fileInputName)[0];
-                if (fileInput && fileInput.files.length > 0) {
-                    const ext = fileInput.files[0].name.split('.').pop().toLowerCase();
-                    if (ext === "felis") {
-                        alert(".felis files are not allowed.");
-                        return false;
-                    }
-                }
-                return true;
-            };
+        submitHandler: function(form) {
+          form.submit();
+      }
 
-            if (!checkForbiddenExt("profile_pic") || !checkForbiddenExt("id_proof")) {
-                return false;
-            }
-
-            form.submit();
-        }
     });
-});
+
+    $.validator.addMethod("dobValidation", function(value, element) {
+        const dob = new Date(value);
+        const today = new Date();
+        let age = today.getFullYear() - dob.getFullYear();
+        const monthDiff = today.getMonth() - dob.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+            age--;
+        }
+        return age >= 13;
+    }, "You must be at least 13 years old.");
+  });
   </script>
 @stop

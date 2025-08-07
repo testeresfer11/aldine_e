@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Traits\SendResponseTrait;
 use App\Models\{StudyRoom, StudyRoomMember, StudyRoomMessage, StudyRoomRequest,ChatRoom,ChatRoomUser};
-
+use Illuminate\Support\Facades\Log;
+use Auth;
 class StudyRoomController extends Controller
 {
     use SendResponseTrait;
@@ -60,7 +61,7 @@ class StudyRoomController extends Controller
 
                 $room->user_status = $memberStatus ?? ($requestStatus ?? null);
 
-                // 🔍 Fetch chat room based on naming convention
+                //  Fetch chat room based on naming convention
                 $chatRoom = \App\Models\ChatRoom::where('name', 'StudyRoom_' . $room->id)->first();
                 $room->chat_room_id = $chatRoom?->id ?? null;
 
@@ -86,98 +87,118 @@ class StudyRoomController extends Controller
 }
 
 
-    public function sendJoinRequest(Request $request, $roomId)
-    {
-        $user = auth()->user();
-        $room = StudyRoom::findOrFail($roomId);
+public function sendJoinRequest(Request $request, $roomId)
+{
+    $user = auth()->user();
+    $room = StudyRoom::findOrFail($roomId);
 
-        // If user already a member
-        $existingMember = StudyRoomMember::where("room_id", $roomId)
-            ->where("user_id", $user->id)
-            ->first();
+    // Check if user is already a member
+    $existingMember = StudyRoomMember::where('room_id', $roomId)
+        ->where('user_id', $user->id)
+        ->first();
 
-        if ($existingMember) {
-            return $this->apiResponse(
-                "error",
-                409,
-                "You are already a member of this room."
-            );
-        }
+    if ($existingMember) {
+        return $this->apiResponse('error', 409, 'You are already a member of this room.');
+    }
 
-        // Check if room is full
-        $memberCount = StudyRoomMember::where("room_id", $roomId)->count();
-        if ($room->max_allowed !== null && $memberCount >= $room->max_allowed) {
-            return $this->apiResponse(
-                "error",
-                403,
-                "This group is full. Try another one or create your own."
-            );
-        }
+    // Check if room is full
+    $memberCount = StudyRoomMember::where('room_id', $roomId)->count();
+    if (!is_null($room->max_allowed) && $memberCount >= $room->max_allowed) {
+        return $this->apiResponse('error', 403, 'This group is full. Try another one or create your own.');
+    }
 
-        // For public room, auto approve and join chat
-        if ($room->type === "public") {
-            StudyRoomMember::create([
-                "room_id" => $roomId,
-                "user_id" => $user->id,
-                "status" => "approved",
-            ]);
-
-            // Get chat room by study room naming convention
-            $chatRoom = ChatRoom::where(
-                "name",
-                "StudyRoom_" . $room->id
-            )->first();
-
-            if ($chatRoom) {
-                $alreadyInChat = ChatRoomUser::where(
-                    "chat_room_id",
-                    $chatRoom->id
-                )
-                    ->where("user_id", $user->id)
-                    ->exists();
-
-                if (!$alreadyInChat) {
-                    ChatRoomUser::create([
-                        "chat_room_id" => $chatRoom->id,
-                        "user_id" => $user->id,
-                    ]);
-                }
-            }
-
-            return $this->apiResponse(
-                "success",
-                200,
-                "You have joined the public room and chat."
-            );
-        }
-
-        // Check if already requested
-        $existingRequest = StudyRoomRequest::where("room_id", $roomId)
-            ->where("user_id", $user->id)
-            ->where("status", "pending")
-            ->first();
-
-        if ($existingRequest) {
-            return $this->apiResponse(
-                "error",
-                409,
-                "Join request already sent and pending."
-            );
-        }
-
-        // Create request for private room
-        StudyRoomRequest::create([
-            "room_id" => $roomId,
-            "user_id" => $user->id,
-            "status" => "pending",
+    // For public room: auto-approve membership and join chat
+    if ($room->type === 'public') {
+        StudyRoomMember::create([
+            'room_id' => $roomId,
+            'user_id' => $user->id,
+            'status' => 'approved',
         ]);
 
-        return $this->apiResponse(
-            "success",
-            200,
-            "Join request sent successfully."
-        );
+        $chatRoom = ChatRoom::where('name', 'StudyRoom_' . $room->id)->first();
+
+        if ($chatRoom) {
+            $alreadyInChat = ChatRoomUser::where('chat_room_id', $chatRoom->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$alreadyInChat) {
+                ChatRoomUser::create([
+                    'chat_room_id' => $chatRoom->id,
+                    'user_id' => $user->id,
+                ]);
+                $room = StudyRoom::with('members')->findOrFail($roomId);
+                // Send push notification to room creator
+
+                $notificationData = [
+                    'title' => 'New member joined group',
+                    'body' => $user->first_name . ' has joined the public study room: ' . $room->name,
+                    'type' => 'study_room',
+                    'user_id' => $room->creator_id,
+                ];
+
+                $this->sendPushNotification(
+                    $notificationData['title'],
+                    $notificationData['body'],
+                    $notificationData['type'],
+                    $notificationData['user_id'],
+                );
+
+                // Send push notification to the user
+
+                $this->sendPushNotification(
+                    'Welcome to the Study Room',
+                    'You have successfully joined the public study room: ' . $room->name,
+                    'study_room',
+                    $user->id
+                );
+            }
+        }
+
+        return $this->apiResponse('success', 200, 'You have joined the public room and chat.');
     }
+
+    // For private room: check if request is already sent
+    $existingRequest = StudyRoomRequest::where('room_id', $roomId)
+        ->where('user_id', $user->id)
+        ->where('status', 'pending')
+        ->first();
+
+    if ($existingRequest) {
+        return $this->apiResponse('error', 409, 'Join request already sent and pending.');
+    }
+
+    // Create a new join request for private room
+    StudyRoomRequest::create([
+        'room_id' => $roomId,
+        'user_id' => $user->id,
+        'status' => 'pending',
+    ]);
+    // Send push notification to room creator
+    $notificationData = [
+        'title' => 'New join request',
+        'body' => $user->first_name . ' has requested to join your private study room: ' . $room->name,
+        'type' => 'study_room_request',
+        'user_id' => $room->creator_id,
+    ];
+    $this->sendPushNotification(
+        $notificationData['title'],
+        $notificationData['body'],
+        $notificationData['type'],
+        $notificationData['user_id']
+    );
+
+    // Send push notification to the user
+    $this->sendPushNotification(
+        'Join request sent',
+        'Your request to join the private study room: ' . $room->name . ' has been sent.',
+        'study_room_request',
+        $user->id
+    );
+
+    return $this->apiResponse('success', 200, 'Join request sent successfully.');
+}
+
 
     public function createStudyRoom(Request $request)
     {
@@ -218,6 +239,14 @@ class StudyRoomController extends Controller
             "chat_room_id" => $chatRoom->id,
             "user_id" => $user->id,
         ]);
+
+        // Send push notification to creator
+        $notificationData = [
+            'title' => 'Study Room Created',
+            'body' => 'You have successfully created the study room: ' . $room->name,
+            'type' => 'study_room',
+            'user_id' => $user->id,
+        ];
 
         return $this->apiResponse(
             "success",
@@ -262,6 +291,14 @@ class StudyRoomController extends Controller
             $request->action === "accept" ? "accepted" : "rejected";
         $joinRequest->save();
 
+        // Send push notification to user about request status
+        $notificationData = [
+            'title' => 'Join Request ' . ucfirst($request->action),
+            'body' => 'Your request to join the study room: ' . $room->name . ' has been ' . $request->action . 'ed.',
+            'type' => 'study_room_request',
+            'user_id' => $joinRequest->user_id,
+        ];
+
         // If accepted, add to members and chat room
         if ($request->action === "accept") {
             // Add to study room members
@@ -270,7 +307,8 @@ class StudyRoomController extends Controller
                 "user_id" => $joinRequest->user_id,
                 "status" => "approved",
             ]);
-
+            // Send push notification to user
+          
             // Get or create chat room associated with the study room
             $chatRoom = ChatRoom::where(
                 "name",
