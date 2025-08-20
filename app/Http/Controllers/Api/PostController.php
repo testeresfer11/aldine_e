@@ -45,17 +45,17 @@ public function index(Request $request)
         $post->is_liked = $post->likedByUsers()->where('user_id', $userId)->exists() ? 1 : 0;
         $post->is_pinned = $post->pinnedByUsers()->where('user_id', $userId)->exists() ? 1 : 0;
         return $post;
-    })->sortByDesc('is_pinned')->values(); // 👈 sort before paginate
-
+    })->sortByDesc('is_pinned')->values(); 
     // Paginate manually
     $currentPage = LengthAwarePaginator::resolveCurrentPage();
     $paginated = new LengthAwarePaginator(
-        $transformed->forPage($currentPage, $perPage),
+        $transformed->forPage($currentPage, $perPage)->values(), // optional .values() again for safety
         $transformed->count(),
         $perPage,
         $currentPage,
         ['path' => request()->url(), 'query' => request()->query()]
     );
+
 
     return $this->apiResponse('success', 200, 'All posts fetched successfully', $paginated);
 }
@@ -80,7 +80,7 @@ public function index(Request $request)
         'content' => 'required',
         'title' => 'required',
         'type' => 'required|string|exists:post_types,slug',
-        'images' => 'nullable|array',
+        'images' => 'nullable|string',
         
     ]);
 
@@ -94,7 +94,7 @@ public function index(Request $request)
         'images' => $request->images,
     ]);
 
-    return $this->apiResponse('success', 200, 'Post created successfully', $post);
+    return $this->apiResponse('success', 200, 'Post uploaded !', $post);
 }
 
 
@@ -113,7 +113,7 @@ public function index(Request $request)
         'title' => 'required',
         'content' => 'required',
         'type' => 'required|string|exists:post_types,slug',
-        'images' => 'nullable|array',
+        'images' => 'nullable|string',
         'images.*' => 'url'
     ]);
 

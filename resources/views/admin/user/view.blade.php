@@ -143,6 +143,25 @@
                                       <span class="semi-bold qury">Minor :</span>
                                        <span class="text-muted" >{{ $user->UserDetail->minor ?? 'N/A' }}</span>
                                     </h6>
+                                     <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Future Program :</span>
+                                       <span class="text-muted" >{{ $user->UserDetail->future_program ?? 'N/A' }}</span>
+                                    </h6>
+                                     <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Grade level :</span>
+                                       <span class="text-muted" >{{ $user->UserDetail->grade_level ?? 'N/A' }}</span>
+                                    </h6>
+                                     <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Stream :</span>
+                                       <span class="text-muted" >{{ $user->UserDetail->stream ?? 'N/A' }}</span>
+                                    </h6>
+                                     <h6 class="f-14 mb-1">
+                                      <span class="semi-bold qury">Focused Subject :</span>
+                                       <span class="text-muted" >{{ $user->UserDetail->focused_subject ?? 'N/A' }}</span>
+                                    </h6>
+
+                                    
+
 
                                    
                                 </div>

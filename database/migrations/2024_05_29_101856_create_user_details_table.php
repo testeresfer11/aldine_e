@@ -22,6 +22,10 @@ return new class extends Migration
             $table->string('program')->nullable();
             $table->string('major')->nullable();
             $table->string('minor')->nullable();
+            $table->string('grade_level')->nullable();
+            $table->string('stream')->nullable();
+            $table->string('focused_subject')->nullable();
+            $table->string('future_program')->nullable();
             $table->timestamps();
 
             // Foreign key constraint

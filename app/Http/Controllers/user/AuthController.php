@@ -63,7 +63,7 @@ class AuthController extends Controller
                     $stringReplaceWith  = [$user->full_name, $otp];
                     $newval             = str_replace($stringToReplace, $stringReplaceWith, $template->template);
                     $emailData          = $this->mailData($user->email, $template->subject, $newval, 'Otp_Verification', $template->id);
-                    $this->mailSend($emailData);
+                   $s= $this->mailSend($emailData);
                 }
 
 
@@ -464,6 +464,10 @@ public function handleSocialLogin(Request $request)
                     'program'           => 'nullable|string|max:255',
                     'major'             => 'nullable|string|max:255',
                     'minor'             => 'nullable|string|max:255',
+                    'grade_level'        => 'nullable|string|max:255',
+                    'stream'             => 'nullable|string|max:255',
+                    'focused_subject'    => 'nullable|string|max:255',
+                    'future_program'    => 'nullable|string|max:255',
                 ]);
 
                 if ($validator->fails()) {
@@ -497,6 +501,11 @@ public function handleSocialLogin(Request $request)
                         'program'           => $request->program,
                         'major'             => $request->major,
                         'minor'             => $request->minor,
+                        'grade_level'       => $request->grade_level,
+                        'stream'             => $request->stream,
+                        'focused_subject'    => $request->focused_subject,
+                        'future_program'    => $request->future_program,
+
                     ]
                 );
 
@@ -520,40 +529,41 @@ public function handleSocialLogin(Request $request)
      * createdDate  : 24-04-2025
      * purpose      : uplaod image and retun image url
      */
-    public function uploadImage(Request $request)
+public function uploadImage(Request $request)
 {
     try {
-        // Validate input
+        // Validate input: image or PDF (max 5MB)
         $request->validate([
-            'image' => 'required|image|max:5048',
+            'file' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf|max:5048',
         ]);
 
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('images', $imageName, 'public'); // stores in storage/app/public/images
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('uploads', $fileName, 'public'); // storage/app/public/uploads
 
-            $baseUrl = config('app.url'); 
-            $imageUrl = $baseUrl . '/storage/' . $path;
+            $baseUrl = config('app.url');
+            $fileUrl = $baseUrl . '/storage/' . $path;
 
             return $this->apiResponse(
                 'success',
                 200,
-                'Image ' . config('constants.SUCCESS.UPDATE_DONE'),
+                'File ' . config('constants.SUCCESS.UPDATE_DONE'),
                 [
-                    'image_url' => $imageUrl,
+                    'file_url' => $fileUrl,
                     'base_url' => $baseUrl,
                     'relative_path' => '/storage/' . $path
                 ]
             );
         }
 
-        return $this->apiResponse('error', 400, 'No image found.');
+        return $this->apiResponse('error', 400, 'No file found.');
         
     } catch (\Exception $e) {
         return $this->apiResponse('error', 400, $e->getMessage());
     }
 }
+
 
 
  /**

@@ -17,7 +17,11 @@ class UserDetail extends Model
         'graduating_year',
         'program',
         'major',
-        'minor'
+        'minor',
+        'grade_level',
+        'stream',
+        'focused_subject',
+        'future_program',
     ];
 
 }
