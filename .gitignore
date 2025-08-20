@@ -1,33 +1,60 @@
+# ====================================
+# Laravel & PHP
+# ====================================
 /vendor/
 node_modules/
+composer.lock
+package-lock.json
+
+# Logs & cache
 npm-debug.log
 yarn-error.log
+storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
 
-# Laravel 4 specific
-bootstrap/compiled.php
-app/storage/
+# Environment files
+.env
+.env.*     # includes .env.local, .env.production, etc.
 
-# Laravel 5 & Lumen specific
-public/firebase-service.json
-public/storage
-public/hot
+# Laravel specific
+/public/storage
+/public/hot
+/public/build
 
-
-# Laravel 5 & Lumen specific with changed public path
+# ====================================
+# Alternative public path setups
+# ====================================
 public_html/storage
 public_html/hot
 
-storage/*.key
-.env
+# ====================================
+# IDE & Editor settings
+# ====================================
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+
+# ====================================
+# Homestead & Vagrant
+# ====================================
 Homestead.yaml
 Homestead.json
 /.vagrant
+
+# ====================================
+# PHPUnit & testing
+# ====================================
 .phpunit.result.cache
 
-/public/build
-/storage/pail
-.env.backup
-.env.production
+# ====================================
+# Misc
+# ====================================
 .phpactor.json
 auth.json
 public/firebase-service.json
+
+
